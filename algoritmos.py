@@ -13,33 +13,31 @@ def cycle_sort(arr):
     for cycle_start in range(0, n-1):
         item = arr[cycle_start]
         
+        # Encontra a posição correta contando elementos menores
         pos = cycle_start
-        for i in range(cycle_start+1, n):
+        for i in range(cycle_start + 1, n):
             if arr[i] < item:
                 pos += 1
         
+        # Se já está na posição correta, continua
         if pos == cycle_start:
             continue
         
-        while pos < n and item == arr[pos]:
+        # Pula elementos duplicados
+        while item == arr[pos]:
             pos += 1
         
-        if pos < n:
-            arr[pos], item = item, arr[pos]
-        else:
-            continue
+        # Coloca o item na posição correta
+        arr[pos], item = item, arr[pos]
         
+        # Rotaciona o resto do ciclo
         while pos != cycle_start:
             pos = cycle_start
-            
-            for i in range(cycle_start+1, n):
+            for i in range(cycle_start + 1, n):
                 if arr[i] < item:
                     pos += 1
             
-            while pos < n and item == arr[pos]:
+            while item == arr[pos]:
                 pos += 1
             
-            if pos < n and item != arr[pos]:
-                arr[pos], item = item, arr[pos]
-            else:
-                break
+            arr[pos], item = item, arr[pos]
