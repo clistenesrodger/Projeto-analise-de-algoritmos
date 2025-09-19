@@ -1,10 +1,9 @@
 import time
 import csv
-import copy
 import os
 from algoritmos import selection_sort, cycle_sort
 
-# Estrutura dos arquivos
+# Estrutura dos arquivos (mantida igual)
 arquivos = {
     "crescente": {
         "conjunto-pequeno": "conjunto-pequeno/crescente.txt",
@@ -30,10 +29,13 @@ def carregar_arquivo(nome_arquivo):
         return list(map(int, f.read().split()))
 
 def medir_tempo(func, arr):
-    inicio = time.time()
+    inicio = time.perf_counter()  # Mais preciso para intervalos curtos
     func(arr)
-    fim = time.time()
-    return fim - inicio
+    return time.perf_counter() - inicio
+
+def verificar_ordenacao(arr):
+    # Verifica se o array está ordenado corretamente
+    return all(arr[i] <= arr[i+1] for i in range(len(arr)-1))
 
 def executar_testes():
     for tipo, conj in arquivos.items():
@@ -46,37 +48,36 @@ def executar_testes():
                 continue
 
             nome_csv = f"{tamanho}-{tipo}.csv"
-            
-            tempos_selection = []
-            tempos_cycle = []
-            
-            for execucao in range(1, 31):
-                print(f"Executando {tamanho}-{tipo} - Execução {execucao}/30")
+            resultados = []
+
+            # Warm-up: Executa cada algoritmo uma vez sem medir
+            selection_sort(dados.copy())
+            cycle_sort(dados.copy())
+
+            for execucao in range(30):
+                print(f"Executando {tamanho}-{tipo} - Execução {execucao+1}/30")
                 
-                try:
-                    # Selection Sort
-                    arr1 = copy.deepcopy(dados)
-                    tempo1 = medir_tempo(selection_sort, arr1)
-                    tempos_selection.append(tempo1)
+                # Intercala a ordem dos algoritmos a cada execução
+                for algoritmo in [selection_sort, cycle_sort]:
+                    arr_copia = dados.copy()  # Cópia superficial (rápida)
+                    tempo = medir_tempo(algoritmo, arr_copia)
                     
-                    # Cycle Sort
-                    arr2 = copy.deepcopy(dados)
-                    tempo2 = medir_tempo(cycle_sort, arr2)
-                    tempos_cycle.append(tempo2)
+                    # Valida a ordenação
+                    if not verificar_ordenacao(arr_copia):
+                        print(f"Erro: {algoritmo.__name__} não ordenou corretamente!")
                     
-                except Exception as e:
-                    print(f"Erro durante a execução {execucao}: {e}")
-                    continue
-            
+                    resultados.append({
+                        "Algoritmo": algoritmo.__name__,
+                        "Execucao": execucao + 1,
+                        "Tempo": tempo
+                    })
+
+            # Salva os resultados no CSV
             with open(nome_csv, "w", newline="") as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(["Algoritmo", "Execucao", "Tempo(segundos)"])
-                
-                for i, tempo in enumerate(tempos_selection, 1):
-                    writer.writerow(["SelectionSort", i, f"{tempo:.6f}"])
-                
-                for i, tempo in enumerate(tempos_cycle, 1):
-                    writer.writerow(["CycleSort", i, f"{tempo:.6f}"])
+                for r in resultados:
+                    writer.writerow([r["Algoritmo"], r["Execucao"], f"{r['Tempo']:.6f}"])
 
             print(f"Resultados salvos em {nome_csv}")
 
