@@ -3,7 +3,7 @@ import csv
 import os
 from algoritmos import selection_sort, cycle_sort
 
-# Estrutura dos arquivos (mantida igual)
+# Estrutura dos arquivos (mantida igual).
 arquivos = {
     "crescente": {
         "conjunto-pequeno": "conjunto-pequeno/crescente.txt",
